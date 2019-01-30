@@ -16,6 +16,9 @@ Those two urls are optional:
  * `/tag-keys` should return tag keys for ad hoc filters.
  * `/tag-values` should return tag values for ad hoc filters.
 
+## Compilation
+npm install && grunt
+
 ## Installation
 
 To install this plugin using the `grafana-cli` tool:

@@ -1,7 +1,7 @@
 {
-  "name": "grafana-simple-json",
+  "name": "rockset",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,12 +10,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/grafana/simple-json-datasource.git"
+    "url": "git+https://github.com/rockset/rockset-grafana.git"
   },
-  "author": "",
-  "license": "MIT",
+  "author": "Rockset Engineering",
+  "license": "Apache 2.0",
   "bugs": {
-    "url": "https://github.com/grafana/simple-json-datasource/issues"
+    "url": "https://github.com/rockset/rockset-grafana/issues"
   },
   "engineStrict": true,
   "devDependencies": {
@@ -42,5 +42,5 @@
   "dependencies": {
     "lodash": "^4.17.4"
   },
-  "homepage": "https://github.com/grafana/simple-json-datasource#readme"
+  "homepage": "https://github.com/rockset/rockset-grafana#readme"
 }
