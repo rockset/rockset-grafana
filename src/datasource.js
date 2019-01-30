@@ -2,9 +2,6 @@ import _ from "lodash";
 
 export class GenericDatasource {
 
-  apiserver: string;
-  apikey:    string;
-  
   constructor(instanceSettings, $q, backendSrv, templateSrv) {
     this.type = instanceSettings.type;
     this.url = instanceSettings.url;
@@ -17,8 +14,6 @@ export class GenericDatasource {
     if (typeof instanceSettings.basicAuth === 'string' && instanceSettings.basicAuth.length > 0) {
       this.headers['Authorization'] = instanceSettings.basicAuth;
     }
-    this.apiserver = instanceSettings.apiserver;
-    this.apikey = instanceSettings.apikey;
   }
 
   query(options) {

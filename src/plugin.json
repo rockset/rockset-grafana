@@ -1,6 +1,6 @@
 {
   "name": "Rockset",
-  "id": "rockset",
+  "id": "rockset-datasource",
   "type": "datasource",
 
   "metrics": true,
@@ -9,7 +9,7 @@
   "info": {
     "description": "rockset datasource",
     "author": {
-      "name": "Rockset",
+      "name": "Rockset Engineering",
       "url": "http://rockset.com"
     },
     "logos": {
