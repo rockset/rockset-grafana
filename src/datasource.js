@@ -16,28 +16,26 @@ export class GenericDatasource {
     if (typeof instanceSettings.basicAuth === 'string' && instanceSettings.basicAuth.length > 0) {
       this.headers['Authorization'] = instanceSettings.basicAuth;
     }
-    this.apiserver = "";
-    this.apikey = "";
-    if (instanceSettings.apiserver === undefined) {
+    if (instanceSettings.jsonData === undefined) {
       this.apiserver = " " // needed to support grunt unit tests
       console.log("Setting apiserver to empty string")
     } else {
-      this.apiserver = instanceSettings.apiserver;
-      console.log("Setting apiserver to " + instanceSettings.apiserver);
+      this.apiserver = instanceSettings.jsonData.apiserver;
+      console.log("Setting apiserver to " + instanceSettings.jsonData.apiserver);
     }
-    if (instanceSettings.apikey === undefined) {
+    if (instanceSettings.jsonData === undefined) {
       this.apikey = " " // needed to support grunt unit tests
       console.log("Setting apikey to empty string")
     } else {
-      this.apikey = instanceSettings.apikey;
-      console.log("Setting apikey to " + instanceSettings.apikey);
+      this.apikey = instanceSettings.jsonData.apikey;
+      console.log("Setting apikey to " + instanceSettings.jsonData.apikey);
     }
-    console.log(this.apiserver)
-    this.rocksetClient  = rockset({'apikey':this.apikey, 'host':this.apiserver})
+    this.rocksetClient  = rockset({'apikey':this.apikey, 'host':this.apiserver});
     console.log("GenericDatasource constructor done.");
   }
 
   query(options) {
+    console.log("GenericDatasource query");
     var query = this.buildQueryParameters(options);
     query.targets = query.targets.filter(t => !t.hide);
 
@@ -50,6 +48,8 @@ export class GenericDatasource {
     } else {
       query.adhocFilters = [];
     }
+    console.log("Query ");
+    console.log(query)
 
     return this.doRequest({
       url: this.url + '/query',
@@ -59,6 +59,13 @@ export class GenericDatasource {
   }
 
   testDatasource() {
+    console.log("GenericDatasource testDatasource");
+    return this.rocksetClient.queryInternal('select 1')
+        .then(res => {
+            return { status: 'success', message: 'Rockset Service OK' };
+        });
+
+    /**
     return this.doRequest({
       url: this.url + '/',
       method: 'GET',
@@ -67,9 +74,11 @@ export class GenericDatasource {
         return { status: "success", message: "Data source is working", title: "Success" };
       }
     });
+    **/
   }
 
   annotationQuery(options) {
+    console.log("GenericDatasource annotationQuery");
     var query = this.templateSrv.replace(options.annotation.query, {}, 'glob');
     var annotationQuery = {
       range: options.range,
@@ -93,6 +102,7 @@ export class GenericDatasource {
   }
 
   metricFindQuery(query) {
+    console.log("GenericDatasource metricFindQuery");
     var interpolated = {
         target: this.templateSrv.replace(query, null, 'regex')
     };
@@ -123,6 +133,7 @@ export class GenericDatasource {
   }
 
   buildQueryParameters(options) {
+    console.log("GenericDatasource buildQueryParameters");
     //remove placeholder targets
     options.targets = _.filter(options.targets, target => {
       return target.target !== 'select metric';
@@ -143,6 +154,7 @@ export class GenericDatasource {
   }
 
   getTagKeys(options) {
+    console.log("GenericDatasource getTagKeys");
     return new Promise((resolve, reject) => {
       this.doRequest({
         url: this.url + '/tag-keys',
@@ -155,6 +167,7 @@ export class GenericDatasource {
   }
 
   getTagValues(options) {
+    console.log("GenericDatasource getTagValues");
     return new Promise((resolve, reject) => {
       this.doRequest({
         url: this.url + '/tag-values',

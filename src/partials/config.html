@@ -1,19 +1,16 @@
-<datasource-http-settings current="ctrl.current" suggest-url="https://master-api.dev.rockset.com">
-</datasource-http-settings>
-
 <h3 class="page-heading">Rockset Service</h3>
 
 <div class="gf-form-group">
 	<div class="gf-form-inline">
 		<div class="gf-form max-width-30">
 			<span class="gf-form-label width-10">ServiceURL</span>
-			<input type="text" class="gf-form-input" ng-model='ctrl.current.apiserver' placeholder="" required></input>
+			<input type="text" class="gf-form-input" ng-model='ctrl.current.jsonData.apiserver' placeholder="https://master-api.dev.rockset.com" value="https://master-api.dev.rockset.com" required></input>
 		</div>
 	</div>
 	<div class="gf-form-inline">
 		<div class="gf-form max-width-30">
 			<span class="gf-form-label width-10">ApiKey</span>
-			<input type="text" class="gf-form-input" ng-model='ctrl.current.apikey' placeholder="" required></input>
+			<input type="text" class="gf-form-input" ng-model='ctrl.current.jsonData.apikey' placeholder="rockset api key" value="6AqvyMSE1kgoPYNGdbAKimjkDGYeofiBFOFt40wPtheQX1ztwn09rBpQjEqtWxyI" required></input>
 		</div>
 	</div>
 

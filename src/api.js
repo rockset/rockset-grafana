@@ -40,12 +40,23 @@ var __extends = (this && this.__extends) || (function () {
                     headers["content-type"] = contentType;
                 }
                 var path = self ? _this.host + "/v1/orgs/self/" + endpoint : _this.host + "/" + endpoint;
+                console.log("QQQ path" );
+                console.log(path);
+                console.log("QQQ body" );
+                console.log(body);
+                console.log("QQQ headers" );
+                console.log(headers);
+                console.log("QQQ signal" );
+                console.log(signal);
+
                 return fetch(path, {
                     body: body,
                     headers: headers,
                     method: method,
                     signal: signal,
                 }).then(function (resp) {
+                    console.log("QQQ  success" );
+                    console.log(resp);
                     if (resp.ok) {
                         if (stream) {
                             return resp;
