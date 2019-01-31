@@ -1,8 +1,10 @@
 import _ from "lodash";
+import rockset from "./api.js";
 
 export class GenericDatasource {
 
   constructor(instanceSettings, $q, backendSrv, templateSrv) {
+    console.log("GenericDatasource constructor");
     this.type = instanceSettings.type;
     this.url = instanceSettings.url;
     this.name = instanceSettings.name;
@@ -14,6 +16,25 @@ export class GenericDatasource {
     if (typeof instanceSettings.basicAuth === 'string' && instanceSettings.basicAuth.length > 0) {
       this.headers['Authorization'] = instanceSettings.basicAuth;
     }
+    this.apiserver = "";
+    this.apikey = "";
+    if (instanceSettings.apiserver === undefined) {
+      this.apiserver = " " // needed to support grunt unit tests
+      console.log("Setting apiserver to empty string")
+    } else {
+      this.apiserver = instanceSettings.apiserver;
+      console.log("Setting apiserver to " + instanceSettings.apiserver);
+    }
+    if (instanceSettings.apikey === undefined) {
+      this.apikey = " " // needed to support grunt unit tests
+      console.log("Setting apikey to empty string")
+    } else {
+      this.apikey = instanceSettings.apikey;
+      console.log("Setting apikey to " + instanceSettings.apikey);
+    }
+    console.log(this.apiserver)
+    this.rocksetClient  = rockset({'apikey':this.apikey, 'host':this.apiserver})
+    console.log("GenericDatasource constructor done.");
   }
 
   query(options) {
