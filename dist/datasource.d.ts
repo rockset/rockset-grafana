@@ -1,8 +1,9 @@
 /// <reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
-export default class ChangeMyNameDatasource {
+export default class RocksetDatasource {
     private backendSrv;
     private templateSrv;
     private $q;
+    apiKey: string;
     id: number;
     name: string;
     /** @ngInject */

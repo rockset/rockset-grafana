@@ -1,22 +1,22 @@
 {
   "type": "datasource",
-  "name": "Change My Name",
-  "id": "orgname-pluginname-datasource",
+  "name": "Rockset",
+  "id": "rockset-grafana",
 
   "info": {
-    "description": "Description of plugin",
+    "description": "Plugin for Rockset Collections",
     "author": {
-      "name": "Your name or the company name",
-      "url": "optional url"
+      "name": "Rockset",
+      "url": "https://rockset.com/"
     },
-    "keywords": ["searchable", "key", "words"],
+    "keywords": ["Rockset", "SQL", "JSON", "Collection"],
     "logos": {
-      "small": "img/your_logo.png",
-      "large": "img/your_logo.png"
+      "small": "img/rockset_logo.png",
+      "large": "img/rockset_logo.png"
     },
     "links": [
-      {"name": "Project site", "url": "https://github.com/yourorg/your-datasource"},
-      {"name": "Apache License", "url": "https://github.com/yourorg/your-datasource/blob/master/LICENSE"}
+      {"name": "Project site", "url": "https://github.com/rockset/rockset-grafana"},
+      {"name": "Apache License", "url": "https://github.com/rockset/rockset-grafana/blob/master/LICENSE"}
     ],
     "version": "%VERSION%",
     "updated": "%TODAY%"

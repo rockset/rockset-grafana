@@ -1,16 +1,17 @@
 ///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
 System.register([], function(exports_1) {
-    var ChangeMyNameConfigCtrl;
+    var RocksetConfigCtrl;
     return {
         setters:[],
         execute: function() {
-            ChangeMyNameConfigCtrl = (function () {
-                function ChangeMyNameConfigCtrl($scope) {
+            RocksetConfigCtrl = (function () {
+                function RocksetConfigCtrl($scope) {
+                    console.log($scope);
                 }
-                ChangeMyNameConfigCtrl.templateUrl = 'partials/config.html';
-                return ChangeMyNameConfigCtrl;
+                RocksetConfigCtrl.templateUrl = 'partials/config.html';
+                return RocksetConfigCtrl;
             })();
-            exports_1("ChangeMyNameConfigCtrl", ChangeMyNameConfigCtrl);
+            exports_1("RocksetConfigCtrl", RocksetConfigCtrl);
         }
     }
 });

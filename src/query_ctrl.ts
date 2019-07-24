@@ -4,7 +4,7 @@ import _ from 'lodash';
 import {QueryCtrl} from 'app/plugins/sdk';
 import './css/query_editor.css!';
 
-export class ChangeMyNameQueryCtrl extends QueryCtrl {
+export class RocksetQueryCtrl extends QueryCtrl {
   static templateUrl = 'partials/query.editor.html';
 
   defaults = {

@@ -2,13 +2,15 @@
 
 import _ from 'lodash';
 
-export default class ChangeMyNameDatasource {
+export default class RocksetDatasource {
+  apiKey: string;
   id: number;
   name: string;
 
   /** @ngInject */
   constructor(instanceSettings, private backendSrv, private templateSrv, private $q) {
     this.name = instanceSettings.name;
+    this.apiKey = instanceSettings.jsonData['apiKey'];
     this.id = instanceSettings.id;
   }
 
@@ -25,6 +27,7 @@ export default class ChangeMyNameDatasource {
   }
 
   testDatasource() {
+    console.log(this);
     return this.$q.when({
       status: 'error',
       message: 'Data Source is just a template and has not been implemented yet.',

@@ -6,7 +6,7 @@ System.register(['lodash', 'app/plugins/sdk', './css/query_editor.css!'], functi
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
     var lodash_1, sdk_1;
-    var ChangeMyNameQueryCtrl;
+    var RocksetQueryCtrl;
     return {
         setters:[
             function (lodash_1_1) {
@@ -17,10 +17,10 @@ System.register(['lodash', 'app/plugins/sdk', './css/query_editor.css!'], functi
             },
             function (_1) {}],
         execute: function() {
-            ChangeMyNameQueryCtrl = (function (_super) {
-                __extends(ChangeMyNameQueryCtrl, _super);
+            RocksetQueryCtrl = (function (_super) {
+                __extends(RocksetQueryCtrl, _super);
                 /** @ngInject **/
-                function ChangeMyNameQueryCtrl($scope, $injector, templateSrv) {
+                function RocksetQueryCtrl($scope, $injector, templateSrv) {
                     _super.call(this, $scope, $injector);
                     this.templateSrv = templateSrv;
                     this.defaults = {};
@@ -28,16 +28,16 @@ System.register(['lodash', 'app/plugins/sdk', './css/query_editor.css!'], functi
                     this.target.target = this.target.target || 'select metric';
                     this.target.type = this.target.type || 'timeserie';
                 }
-                ChangeMyNameQueryCtrl.prototype.getOptions = function (query) {
+                RocksetQueryCtrl.prototype.getOptions = function (query) {
                     return this.datasource.metricFindQuery(query || '');
                 };
-                ChangeMyNameQueryCtrl.prototype.onChangeInternal = function () {
+                RocksetQueryCtrl.prototype.onChangeInternal = function () {
                     this.panelCtrl.refresh(); // Asks the panel to refresh data.
                 };
-                ChangeMyNameQueryCtrl.templateUrl = 'partials/query.editor.html';
-                return ChangeMyNameQueryCtrl;
+                RocksetQueryCtrl.templateUrl = 'partials/query.editor.html';
+                return RocksetQueryCtrl;
             })(sdk_1.QueryCtrl);
-            exports_1("ChangeMyNameQueryCtrl", ChangeMyNameQueryCtrl);
+            exports_1("RocksetQueryCtrl", RocksetQueryCtrl);
         }
     }
 });
