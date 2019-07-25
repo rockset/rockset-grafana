@@ -20,24 +20,65 @@ export default class RocksetDatasource {
     this.url = 'https://api.rs2.usw2.rockset.com';
   }
 
-  processQueryResult(values: any) {
-    console.log("values are", values);
-    let data = [];
-    for (const valueIdx in values) {
-      const value = values[valueIdx];
-      data.push(value['data']['results']);
+  createTimeSeriesData(value: Object): Object {
+    return {
+        "target": "upper_75",
+        "datapoints": [
+          [622, 1450754160000],
+          [365, 1450754220000]
+        ]
+      };
+  }
+
+  createTableData(value: Object): Object {
+    const columns = [];
+    const rows = [];
+    const columnInfo = value['data']['column_fields'];
+    const resultValues = value['data']['results'];
+    const columnNames = [];
+    for (let colIdx = 0; colIdx < columnInfo.length; colIdx+=1) {
+      const colInfo = columnInfo[colIdx];
+      columnNames.push(colInfo['name']);
+      columns.push({"text": colInfo['name'], "type": colInfo['type']});
     }
+    for (let valIdx = 0; valIdx < resultValues.length; valIdx+=1) {
+      const rowValues = resultValues[valIdx];
+      const row = [];
+      for (let colNameIdx = 0; colNameIdx < columnNames.length; colNameIdx+=1) {
+        const columnName = columnNames[colNameIdx];
+        row.push(rowValues[columnName]);
+      }
+      rows.push(row);
+    }
+    let data = {
+      "columns": columns,
+      "rows": rows,
+      "type": "table"
+    };
+    return data;
+  }
+
+  processQueryResult(values: Object[], displayTypes: string[]) {
+    let data = [];
+    for (let valueIdx = 0; valueIdx < values.length; valueIdx+=1) {
+      const value = values[valueIdx];
+      if (displayTypes[valueIdx] === 'table') {
+        data.push(this.createTableData(value));
+      } else {
+        data.push(this.createTimeSeriesData(value));
+      }
+    }
+    console.log("data is", data);
     return { data: data };
   }
 
   parseQueries(targets: Object[]): Object[] {
     let queries = [];
-    for (const idx in targets) {
+    for (let idx = 0; idx < targets.length; idx+=1) {
       const queryInfo = targets[idx];
       let queryObject = {};
       queryObject['sql'] = {};
       let sqlQuery = queryInfo['target'];
-      sqlQuery = "SELECT count(*) FROM kubernetes_events";
       queryObject['sql']['query'] = sqlQuery;
       queryObject['sql']['parameters'] = [
         {
@@ -53,7 +94,7 @@ export default class RocksetDatasource {
 
   constructQueryRequests(queries: Object[]): any[] {
     let reqs = [];
-    for (const idx in queries) {
+    for (let idx = 0; idx < queries.length; idx+=1) {
       let data = queries[idx];
       let request = this.doRequest({
         url: this.url + '/v1/orgs/self/queries',
@@ -65,16 +106,19 @@ export default class RocksetDatasource {
     return reqs;
   }
 
+  parseDisplayTypes(targets: Object[]): any[] {
+    return targets.map(target => target['type']);
+  }
+
   query(options) {
-    console.log("options are", options);
-    return this.$q.when({ data: [] });
     let queries = this.parseQueries(options.targets);
     if (queries.length === 0) {
       return this.$q.when({ data: [] });
     }
     let reqs = this.constructQueryRequests(queries);
+    let displayTypes = this.parseDisplayTypes(options.targets);
     return Promise.all(reqs).then((res) => {
-      return this.processQueryResult(res);
+      return this.processQueryResult(res, displayTypes);
     });
   }
 

@@ -11,11 +11,14 @@ export default class RocksetDatasource {
     url: string;
     /** @ngInject */
     constructor(instanceSettings: any, backendSrv: any, templateSrv: any, $q: any);
-    processQueryResult(values: any): {
+    createTimeSeriesData(value: Object): Object;
+    createTableData(value: Object): Object;
+    processQueryResult(values: Object[], displayTypes: string[]): {
         data: any[];
     };
     parseQueries(targets: Object[]): Object[];
     constructQueryRequests(queries: Object[]): any[];
+    parseDisplayTypes(targets: Object[]): any[];
     query(options: any): any;
     annotationQuery(options: any): void;
     metricFindQuery(query: string): void;

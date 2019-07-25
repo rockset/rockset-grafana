@@ -17,23 +17,63 @@ System.register([], function(exports_1) {
                     this.headers['Authorization'] = "ApiKey " + instanceSettings.jsonData['apiKey'];
                     this.url = 'https://api.rs2.usw2.rockset.com';
                 }
-                RocksetDatasource.prototype.processQueryResult = function (values) {
-                    console.log("values are", values);
-                    var data = [];
-                    for (var valueIdx in values) {
-                        var value = values[valueIdx];
-                        data.push(value['data']['results']);
+                RocksetDatasource.prototype.createTimeSeriesData = function (value) {
+                    return {
+                        "target": "upper_75",
+                        "datapoints": [
+                            [622, 1450754160000],
+                            [365, 1450754220000]
+                        ]
+                    };
+                };
+                RocksetDatasource.prototype.createTableData = function (value) {
+                    var columns = [];
+                    var rows = [];
+                    var columnInfo = value['data']['column_fields'];
+                    var resultValues = value['data']['results'];
+                    var columnNames = [];
+                    for (var colIdx = 0; colIdx < columnInfo.length; colIdx += 1) {
+                        var colInfo = columnInfo[colIdx];
+                        columnNames.push(colInfo['name']);
+                        columns.push({ "text": colInfo['name'], "type": colInfo['type'] });
                     }
+                    for (var valIdx = 0; valIdx < resultValues.length; valIdx += 1) {
+                        var rowValues = resultValues[valIdx];
+                        var row = [];
+                        for (var colNameIdx = 0; colNameIdx < columnNames.length; colNameIdx += 1) {
+                            var columnName = columnNames[colNameIdx];
+                            row.push(rowValues[columnName]);
+                        }
+                        rows.push(row);
+                    }
+                    var data = {
+                        "columns": columns,
+                        "rows": rows,
+                        "type": "table"
+                    };
+                    return data;
+                };
+                RocksetDatasource.prototype.processQueryResult = function (values, displayTypes) {
+                    var data = [];
+                    for (var valueIdx = 0; valueIdx < values.length; valueIdx += 1) {
+                        var value = values[valueIdx];
+                        if (displayTypes[valueIdx] === 'table') {
+                            data.push(this.createTableData(value));
+                        }
+                        else {
+                            data.push(this.createTimeSeriesData(value));
+                        }
+                    }
+                    console.log("data is", data);
                     return { data: data };
                 };
                 RocksetDatasource.prototype.parseQueries = function (targets) {
                     var queries = [];
-                    for (var idx in targets) {
+                    for (var idx = 0; idx < targets.length; idx += 1) {
                         var queryInfo = targets[idx];
                         var queryObject = {};
                         queryObject['sql'] = {};
                         var sqlQuery = queryInfo['target'];
-                        sqlQuery = "SELECT count(*) FROM kubernetes_events";
                         queryObject['sql']['query'] = sqlQuery;
                         queryObject['sql']['parameters'] = [
                             {
@@ -48,7 +88,7 @@ System.register([], function(exports_1) {
                 };
                 RocksetDatasource.prototype.constructQueryRequests = function (queries) {
                     var reqs = [];
-                    for (var idx in queries) {
+                    for (var idx = 0; idx < queries.length; idx += 1) {
                         var data = queries[idx];
                         var request = this.doRequest({
                             url: this.url + '/v1/orgs/self/queries',
@@ -59,17 +99,19 @@ System.register([], function(exports_1) {
                     }
                     return reqs;
                 };
+                RocksetDatasource.prototype.parseDisplayTypes = function (targets) {
+                    return targets.map(function (target) { return target['type']; });
+                };
                 RocksetDatasource.prototype.query = function (options) {
                     var _this = this;
-                    console.log("options are", options);
-                    return this.$q.when({ data: [] });
                     var queries = this.parseQueries(options.targets);
                     if (queries.length === 0) {
                         return this.$q.when({ data: [] });
                     }
                     var reqs = this.constructQueryRequests(queries);
+                    var displayTypes = this.parseDisplayTypes(options.targets);
                     return Promise.all(reqs).then(function (res) {
-                        return _this.processQueryResult(res);
+                        return _this.processQueryResult(res, displayTypes);
                     });
                 };
                 RocksetDatasource.prototype.annotationQuery = function (options) {

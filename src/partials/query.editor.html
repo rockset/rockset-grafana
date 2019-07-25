@@ -7,6 +7,7 @@
           style="width:600px;"
           ng-model="ctrl.target.target"
           rows="1"
+          spellcheck="false"
           get-options="ctrl.getOptions($query)"
           on-change="ctrl.onChangeInternal()">
         </textarea>
@@ -17,7 +18,7 @@
       </div>
       <div class="gf-form max-width-8">
         <label class="gf-form-label query-keyword">Format as</label>
-        <select class="gf-form-input gf-size-auto" ng-model="ctrl.target.type" ng-options="f as f for f in ['table']"></select>
+        <select class="gf-form-input gf-size-auto" ng-model="ctrl.target.type" ng-options="f as f for f in ['timeseries', 'table']"></select>
       </div>
     </div>
   </div>
