@@ -18,8 +18,8 @@
       {"name": "Project site", "url": "https://github.com/rockset/rockset-grafana"},
       {"name": "Apache License", "url": "https://github.com/rockset/rockset-grafana/blob/master/LICENSE"}
     ],
-    "version": "%VERSION%",
-    "updated": "%TODAY%"
+    "version": "0.0.1",
+    "updated": "2019-07-25"
   },
 
   "dependencies": {

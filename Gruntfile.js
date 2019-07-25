@@ -1,80 +1,106 @@
 module.exports = function(grunt) {
-
   require('load-grunt-tasks')(grunt);
 
-  grunt.loadNpmTasks('grunt-execute');
+  var pkgJson = require('./package.json');
+
   grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-typescript');
+  grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-string-replace');
 
   grunt.initConfig({
-
-    clean: ["dist"],
+    clean: ['dist'],
 
     copy: {
-      src_to_dist: {
+      dist_js: {
+        expand: true,
         cwd: 'src',
-        expand: true,
-        src: ['**/*', '!**/*.js', '!**/*.scss'],
+        src: ['**/*.ts', '**/*.d.ts'],
         dest: 'dist'
       },
-      pluginDef: {
+      dist_html: {
         expand: true,
-        src: ['README.md'],
-        dest: 'dist'
+        flatten: true,
+        cwd: 'src/partials',
+        src: ['*.html'],
+        dest: 'dist/partials/'
+      },
+      dist_css: {
+        expand: true,
+        flatten: true,
+        cwd: 'src/css',
+        src: ['*.css'],
+        dest: 'dist/css/'
+      },
+      dist_img: {
+        expand: true,
+        flatten: true,
+        cwd: 'src/img',
+        src: ['*.*'],
+        dest: 'dist/img/'
+      },
+      dist_statics: {
+        expand: true,
+        flatten: true,
+        src: ['src/plugin.json', 'LICENSE', 'README.md'],
+        dest: 'dist/'
       }
     },
 
-    watch: {
-      rebuild_all: {
-        files: ['src/**/*'],
-        tasks: ['default'],
-        options: {spawn: false}
+    typescript: {
+      build: {
+        src: ['dist/**/*.ts', '!**/*.d.ts'],
+        dest: 'dist',
+        options: {
+          module: 'system',
+          target: 'es5',
+          rootDir: 'dist/',
+          declaration: true,
+          emitDecoratorMetadata: true,
+          experimentalDecorators: true,
+          sourceMap: true,
+          noImplicitAny: false,
+        }
       }
     },
 
-    babel: {
-      options: {
-        sourceMap: true,
-        presets:  ['env'],
-        plugins: ['transform-object-rest-spread']
-      },
+    'string-replace': {
       dist: {
         files: [{
           cwd: 'src',
           expand: true,
-          src: ['**/*.js'],
-          dest: 'dist',
-          ext:'.js'
-        }]
-      },
-      distTestNoSystemJs: {
-        files: [{
-          cwd: 'src',
-          expand: true,
-          src: ['**/*.js'],
-          dest: 'dist/test',
-          ext:'.js'
-        }]
-      },
-      distTestsSpecsNoSystemJs: {
-        files: [{
-          expand: true,
-          cwd: 'spec',
-          src: ['**/*.js'],
-          dest: 'dist/test/spec',
-          ext:'.js'
-        }]
+          src: ["**/plugin.json"],
+          dest: 'dist'
+        }],
+        options: {
+          replacements: [{
+            pattern: '%VERSION%',
+            replacement: pkgJson.version
+          },{
+            pattern: '%TODAY%',
+            replacement: '<%= grunt.template.today("yyyy-mm-dd") %>'
+          }]
+        }
       }
     },
 
-    mochaTest: {
-      test: {
-        options: {
-          reporter: 'spec'
-        },
-        src: ['dist/test/spec/test-main.js', 'dist/test/spec/*_spec.js']
-      }
+    watch: {
+      files: ['src/**/*.ts', 'src/**/*.html', 'src/**/*.css', 'src/img/*.*', 'src/plugin.json', 'README.md'],
+      tasks: ['default'],
+      options: {
+        debounceDelay: 250,
+      },
     }
   });
 
-  grunt.registerTask('default', ['clean', 'copy:src_to_dist', 'copy:pluginDef', 'babel', 'mochaTest']);
+  grunt.registerTask('default', [
+    'clean',
+    'copy:dist_js',
+    'typescript:build',
+    'copy:dist_html',
+    'copy:dist_css',
+    'copy:dist_img',
+    'copy:dist_statics',
+    'string-replace'
+  ]);
 };
