@@ -6,7 +6,6 @@ System.register([], function(exports_1) {
         execute: function() {
             RocksetConfigCtrl = (function () {
                 function RocksetConfigCtrl($scope) {
-                    console.log($scope);
                 }
                 RocksetConfigCtrl.templateUrl = 'partials/config.html';
                 return RocksetConfigCtrl;

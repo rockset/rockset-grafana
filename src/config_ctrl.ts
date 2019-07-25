@@ -5,6 +5,5 @@ export class RocksetConfigCtrl {
   current: any;
 
   constructor($scope) {
-    console.log($scope);
   }
 }

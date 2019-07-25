@@ -2,15 +2,22 @@
   <div class="gf-form-group">
     <div class="gf-form-inline">
       <div class="gf-form">
-        <gf-form-dropdown model="ctrl.target.target"
-          allow-custom="true"
-          lookup-text="true"
+        <textarea
+          class="gf-form-input"
+          style="width:600px;"
+          ng-model="ctrl.target.target"
+          rows="1"
           get-options="ctrl.getOptions($query)"
           on-change="ctrl.onChangeInternal()">
-        </gf-form-dropdown>
+        </textarea>
       </div>
       <div class="gf-form gf-form--grow">
         <div class="gf-form-label gf-form-label--grow"></div>
+      </div>
+      </div>
+      <div class="gf-form max-width-8">
+        <label class="gf-form-label query-keyword">Format as</label>
+        <select class="gf-form-input gf-size-auto" ng-model="ctrl.target.type" ng-options="f as f for f in ['table']"></select>
       </div>
     </div>
   </div>
