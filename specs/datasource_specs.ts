@@ -66,6 +66,10 @@ describe('RocksetDatasource', function() {
   });
 
   describe('When performing query', function() {
+    const firstDate = "2019-07-04T19:55:22.351000Z";
+    const firstCount = 200;
+    const secondCount = 300;
+    const secondDate = "2019-07-04T19:55:22.351000Z";
     const response = {
       data: {
         column_fields: [
@@ -73,8 +77,8 @@ describe('RocksetDatasource', function() {
           {name: "?date", type: ""}
         ],
         results: [
-          {"?count": 200, "?date": "2019-07-04T19:55:22.351000Z"},
-          {"?count": 300, "?date": "2019-07-04T19:55:22.351000Z"}
+          {"?count": firstCount, "?date": firstDate},
+          {"?count": secondCount, "?date": secondDate}
         ]
       },
       status: 200,
@@ -124,6 +128,39 @@ describe('RocksetDatasource', function() {
         expect(data.data.length).to.equal(2);
         expect(data.data[0].datapoints.length).to.equal(2);
         expect(data.data[1].datapoints.length).to.equal(2);
+      });
+    });
+
+    it('should return success status for single table query', function() {
+      const options = {
+        headers: {},
+        targets: [{'target': 'SELECT * FROM foo', 'type': 'table'}],
+      };
+      return ctx.ds.query(options).then(function(data) {
+        expect(data.data.length).to.equal(1);
+        expect(data.data[0].type).to.equal('table');
+        expect(data.data[0].rows[0][0]).to.equal(firstCount);
+        expect(data.data[0].rows[0][1]).to.equal(firstDate);
+        expect(data.data[0].rows[1][0]).to.equal(secondCount);
+        expect(data.data[0].rows[1][1]).to.equal(secondDate);
+      });
+    });
+    it('should return success status for multiple table query', function() {
+      const options = {
+        headers: {},
+        targets: [
+          {'target': 'SELECT * FROM foo', 'type': 'table'},
+          {'target': 'SELECT * FROM foo', 'type': 'table'}
+        ],
+      };
+      return ctx.ds.query(options).then(function(data) {
+        expect(data.data.length).to.equal(2);
+        for (const datapoint of data.data) {
+          expect(datapoint.rows[0][0]).to.equal(firstCount);
+          expect(datapoint.rows[0][1]).to.equal(firstDate);
+          expect(datapoint.rows[1][0]).to.equal(secondCount);
+          expect(datapoint.rows[1][1]).to.equal(secondDate);
+        }
       });
     });
   });
