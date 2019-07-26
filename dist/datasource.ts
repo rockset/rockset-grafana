@@ -20,14 +20,67 @@ export default class RocksetDatasource {
     this.url = 'https://api.rs2.usw2.rockset.com';
   }
 
-  createTimeSeriesData(value: Object): Object {
-    return {
-        "target": "upper_75",
-        "datapoints": [
-          [622, 1450754160000],
-          [365, 1450754220000]
-        ]
-      };
+  findTimeSeriesCol(value: Object) {
+    const columnFields = value['data']['column_fields'];
+    const results = value['data']['results'];
+    if (results.length === 0) {
+      throw new Error("No results returned from your query");
+    }
+    const sampleRow = results[0];
+    let timeSeriesCount = 0;
+    let timeSeriesColumnName;
+    for (const colField of columnFields) {
+      const colName = colField['name'];
+      const rowValue = sampleRow[colName];
+      const date = Date.parse(rowValue);
+      // Right now, we only accept timestamp strings from the rockset response
+      if (typeof(rowValue) !== 'string' || isNaN(date)) {
+        continue;
+      }
+      timeSeriesColumnName = colName;
+      timeSeriesCount += 1;
+    }
+    if (timeSeriesCount === 0) {
+      throw new Error("Timeseries not found in query response");
+    } else if (timeSeriesCount > 1) {
+      throw new Error("Multiple timeseries in query not supported");
+    }
+    return timeSeriesColumnName;
+  }
+
+
+  createTimeSeriesData(value: Object): Object[] {
+    const data = [];
+    const timeSeriesCol = this.findTimeSeriesCol(value);
+    const targets = {};
+    for (const row of value['data']['results']) {
+      for (var key in row) {
+        if (!(key in targets)) {
+          targets[key] = [];
+        }
+        targets[key].push(row[key]);
+      }
+    }
+    for (const key in targets) {
+      // don't construct a time series graph
+      if (key === timeSeriesCol) {
+        continue;
+      }
+      const fieldValues = targets[key];
+      const times = targets[timeSeriesCol];
+      const datapoints = [];
+      for (let idx = 0; idx < fieldValues.length; idx += 1) {
+        datapoints.push([
+          fieldValues[idx],
+          Date.parse(times[idx])
+        ]);
+      }
+      data.push({
+        "target": key,
+        "datapoints": datapoints
+      });
+    }
+    return data;
   }
 
   createTableData(value: Object): Object {
@@ -65,10 +118,9 @@ export default class RocksetDatasource {
       if (displayTypes[valueIdx] === 'table') {
         data.push(this.createTableData(value));
       } else {
-        data.push(this.createTimeSeriesData(value));
+        data.push(...this.createTimeSeriesData(value));
       }
     }
-    console.log("data is", data);
     return { data: data };
   }
 
@@ -80,13 +132,6 @@ export default class RocksetDatasource {
       queryObject['sql'] = {};
       let sqlQuery = queryInfo['target'];
       queryObject['sql']['query'] = sqlQuery;
-      queryObject['sql']['parameters'] = [
-        {
-            "name": "_id",
-            "type": "string",
-            "value": "85beb391"
-          }
-      ];
       queries.push(queryObject);
     }
     return queries;
@@ -144,7 +189,7 @@ export default class RocksetDatasource {
       return { status: 'success', message: 'Database Connection OK' };
     })
     .catch((err: any) => {
-      console.log(err);
+      console.error(err);
       if (err.data && err.data.message) {
         return { status: 'error', message: err.data.message };
       } else {
