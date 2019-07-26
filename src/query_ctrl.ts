@@ -16,7 +16,7 @@ export class RocksetQueryCtrl extends QueryCtrl {
 
     _.defaultsDeep(this.target, this.defaults);
 
-    this.target.target = this.target.target || 'select metric';
+    this.target.target = this.target.target || '';
     this.target.type = this.target.type || 'timeserie';
   }
 

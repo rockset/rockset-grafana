@@ -25,7 +25,7 @@ System.register(['lodash', 'app/plugins/sdk', './css/query_editor.css!'], functi
                     this.templateSrv = templateSrv;
                     this.defaults = {};
                     lodash_1.default.defaultsDeep(this.target, this.defaults);
-                    this.target.target = this.target.target || 'select metric';
+                    this.target.target = this.target.target || '';
                     this.target.type = this.target.type || 'timeserie';
                 }
                 RocksetQueryCtrl.prototype.getOptions = function (query) {
