@@ -11,7 +11,7 @@ export default class RocksetDatasource {
     url: string;
     /** @ngInject */
     constructor(instanceSettings: any, backendSrv: any, templateSrv: any, $q: any);
-    findTimeSeriesCol(value: Object): any;
+    findTimeSeriesCol(value: Object): string;
     createTimeSeriesData(value: Object): Object[];
     createTableData(value: Object): Object;
     processQueryResult(values: Object[], displayTypes: string[]): {

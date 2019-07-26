@@ -126,9 +126,11 @@ System.register([], function(exports_1) {
                         var queryInfo = targets[idx];
                         var queryObject = {};
                         queryObject['sql'] = {};
-                        var sqlQuery = queryInfo['target'];
-                        queryObject['sql']['query'] = sqlQuery;
-                        queries.push(queryObject);
+                        if (queryInfo['target']) {
+                            var sqlQuery = queryInfo['target'];
+                            queryObject['sql']['query'] = sqlQuery;
+                            queries.push(queryObject);
+                        }
                     }
                     return queries;
                 };

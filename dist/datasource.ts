@@ -28,7 +28,7 @@ export default class RocksetDatasource {
     }
     const sampleRow = results[0];
     let timeSeriesCount = 0;
-    let timeSeriesColumnName;
+    let timeSeriesColumnName: string;
     for (const colField of columnFields) {
       const colName = colField['name'];
       const rowValue = sampleRow[colName];
@@ -130,9 +130,11 @@ export default class RocksetDatasource {
       const queryInfo = targets[idx];
       let queryObject = {};
       queryObject['sql'] = {};
-      let sqlQuery = queryInfo['target'];
-      queryObject['sql']['query'] = sqlQuery;
-      queries.push(queryObject);
+      if (queryInfo['target']) {
+        let sqlQuery = queryInfo['target'];
+        queryObject['sql']['query'] = sqlQuery;
+        queries.push(queryObject);
+      }
     }
     return queries;
   }
