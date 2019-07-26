@@ -4,6 +4,7 @@ export declare class RocksetQueryCtrl extends QueryCtrl {
     private templateSrv;
     static templateUrl: string;
     defaults: {};
+    debounce: any;
     /** @ngInject **/
     constructor($scope: any, $injector: any, templateSrv: any);
     getOptions(query: any): any;

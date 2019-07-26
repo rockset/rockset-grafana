@@ -9,15 +9,19 @@ export class RocksetQueryCtrl extends QueryCtrl {
 
   defaults = {
   };
+  debounce = null;
 
   /** @ngInject **/
   constructor($scope, $injector, private templateSrv) {
     super($scope, $injector);
 
     _.defaultsDeep(this.target, this.defaults);
-
     this.target.target = this.target.target || '';
     this.target.type = this.target.type || 'timeserie';
+    const _this = this;
+    this.debounce = _.debounce(function() {
+      _this.panelCtrl.refresh();
+    }, 1000);
   }
 
   getOptions(query) {
@@ -25,6 +29,8 @@ export class RocksetQueryCtrl extends QueryCtrl {
   }
 
   onChangeInternal() {
-    this.panelCtrl.refresh(); // Asks the panel to refresh data.
+    this.debounce.cancel();
+    this.debounce();
+    // this.panelCtrl.refresh(); // Asks the panel to refresh data.
   }
 }

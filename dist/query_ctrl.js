@@ -24,15 +24,22 @@ System.register(['lodash', 'app/plugins/sdk', './css/query_editor.css!'], functi
                     _super.call(this, $scope, $injector);
                     this.templateSrv = templateSrv;
                     this.defaults = {};
+                    this.debounce = null;
                     lodash_1.default.defaultsDeep(this.target, this.defaults);
                     this.target.target = this.target.target || '';
                     this.target.type = this.target.type || 'timeserie';
+                    var _this = this;
+                    this.debounce = lodash_1.default.debounce(function () {
+                        _this.panelCtrl.refresh();
+                    }, 1000);
                 }
                 RocksetQueryCtrl.prototype.getOptions = function (query) {
                     return this.datasource.metricFindQuery(query || '');
                 };
                 RocksetQueryCtrl.prototype.onChangeInternal = function () {
-                    this.panelCtrl.refresh(); // Asks the panel to refresh data.
+                    this.debounce.cancel();
+                    this.debounce();
+                    // this.panelCtrl.refresh(); // Asks the panel to refresh data.
                 };
                 RocksetQueryCtrl.templateUrl = 'partials/query.editor.html';
                 return RocksetQueryCtrl;
