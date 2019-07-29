@@ -2,10 +2,10 @@
 
 ## Requirements
 
-You will need to create an account and add a Rockset API key from ![the Rockset console](`https://console.rockset.com/apikeys#`)
+You will need to create an account and add a Rockset API key from `https://console.rockset.com/apikeys#`
 
 ## Setup
-To add this plugin into your Grafana, `git clone` the repository, and copy it into your `data/plugins` directory. You can also follow the instructions ![here](https://grafana.com/docs/plugins/developing/development/)
+To add this plugin into your Grafana, `git clone` the repository, and copy it into your `data/plugins` directory. You can also follow the instructions at `https://grafana.com/docs/plugins/developing/development/`
 
 You should then be able to select Rockset as a data source, enter your API key and begin creating dashboards.
 
