@@ -12,14 +12,16 @@ export default class RocksetDatasource {
     /** @ngInject */
     constructor(instanceSettings: any, backendSrv: any, templateSrv: any, $q: any);
     findTimeSeriesCol(value: Object): string;
-    createTimeSeriesData(value: Object): Object[];
+    parseTimeFromValue(value: any): any;
+    createTimeSeriesData(value: Object, timeSeriesColName: string): Object[];
     createTableData(value: Object): Object;
-    processQueryResult(values: Object[], displayTypes: string[]): {
+    processQueryResult(values: Object[], displayTypes: string[], timeSeriesCols: string[]): {
         data: any[];
     };
     parseQueries(targets: Object[]): Object[];
     constructQueryRequests(queries: Object[]): any[];
     parseDisplayTypes(targets: Object[]): any[];
+    parseTimeSeriesCols(targets: Object[]): string[];
     query(options: any): any;
     annotationQuery(options: any): void;
     metricFindQuery(query: string): void;

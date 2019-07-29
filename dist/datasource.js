@@ -46,9 +46,17 @@ System.register([], function(exports_1) {
                     }
                     return timeSeriesColumnName;
                 };
-                RocksetDatasource.prototype.createTimeSeriesData = function (value) {
+                RocksetDatasource.prototype.parseTimeFromValue = function (value) {
+                    // date is a datetime string
+                    if (typeof (value) === 'string') {
+                        return Date.parse(value);
+                    }
+                    // date is raw number of seconds
+                    return value;
+                };
+                RocksetDatasource.prototype.createTimeSeriesData = function (value, timeSeriesColName) {
                     var data = [];
-                    var timeSeriesCol = this.findTimeSeriesCol(value);
+                    var timeSeriesCol = timeSeriesColName ? timeSeriesColName : this.findTimeSeriesCol(value);
                     var targets = {};
                     for (var _i = 0, _a = value['data']['results']; _i < _a.length; _i++) {
                         var row = _a[_i];
@@ -65,12 +73,15 @@ System.register([], function(exports_1) {
                             continue;
                         }
                         var fieldValues = targets[key_1];
+                        if (!(timeSeriesCol in targets)) {
+                            throw new Error("Specified timeseries column not found");
+                        }
                         var times = targets[timeSeriesCol];
                         var datapoints = [];
                         for (var idx = 0; idx < fieldValues.length; idx += 1) {
                             datapoints.push([
                                 fieldValues[idx],
-                                Date.parse(times[idx])
+                                this.parseTimeFromValue(times[idx])
                             ]);
                         }
                         data.push({
@@ -107,15 +118,16 @@ System.register([], function(exports_1) {
                     };
                     return data;
                 };
-                RocksetDatasource.prototype.processQueryResult = function (values, displayTypes) {
+                RocksetDatasource.prototype.processQueryResult = function (values, displayTypes, timeSeriesCols) {
                     var data = [];
                     for (var valueIdx = 0; valueIdx < values.length; valueIdx += 1) {
                         var value = values[valueIdx];
+                        var timeSeriesCol = timeSeriesCols[valueIdx];
                         if (displayTypes[valueIdx] === 'table') {
                             data.push(this.createTableData(value));
                         }
                         else {
-                            data.push.apply(data, this.createTimeSeriesData(value));
+                            data.push.apply(data, this.createTimeSeriesData(value, timeSeriesCol));
                         }
                     }
                     return { data: data };
@@ -150,6 +162,9 @@ System.register([], function(exports_1) {
                 RocksetDatasource.prototype.parseDisplayTypes = function (targets) {
                     return targets.map(function (target) { return target['type']; });
                 };
+                RocksetDatasource.prototype.parseTimeSeriesCols = function (targets) {
+                    return targets.map(function (target) { return target['timeseriesCol']; });
+                };
                 RocksetDatasource.prototype.query = function (options) {
                     var _this = this;
                     var queries = this.parseQueries(options.targets);
@@ -158,8 +173,9 @@ System.register([], function(exports_1) {
                     }
                     var reqs = this.constructQueryRequests(queries);
                     var displayTypes = this.parseDisplayTypes(options.targets);
+                    var timeSeriesCols = this.parseTimeSeriesCols(options.targets);
                     return Promise.all(reqs).then(function (res) {
-                        return _this.processQueryResult(res, displayTypes);
+                        return _this.processQueryResult(res, displayTypes, timeSeriesCols);
                     });
                 };
                 RocksetDatasource.prototype.annotationQuery = function (options) {

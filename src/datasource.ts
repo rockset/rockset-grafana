@@ -48,10 +48,18 @@ export default class RocksetDatasource {
     return timeSeriesColumnName;
   }
 
+  parseTimeFromValue(value) {
+    // date is a datetime string
+    if (typeof(value) === 'string') {
+      return Date.parse(value);
+    }
+    // date is raw number of seconds
+    return value;
+  }
 
-  createTimeSeriesData(value: Object): Object[] {
+  createTimeSeriesData(value: Object, timeSeriesColName: string): Object[] {
     const data = [];
-    const timeSeriesCol = this.findTimeSeriesCol(value);
+    const timeSeriesCol = timeSeriesColName ? timeSeriesColName : this.findTimeSeriesCol(value);
     const targets = {};
     for (const row of value['data']['results']) {
       for (var key in row) {
@@ -67,12 +75,15 @@ export default class RocksetDatasource {
         continue;
       }
       const fieldValues = targets[key];
+      if (!(timeSeriesCol in targets)) {
+        throw new Error("Specified timeseries column not found");
+      }
       const times = targets[timeSeriesCol];
       const datapoints = [];
       for (let idx = 0; idx < fieldValues.length; idx += 1) {
         datapoints.push([
           fieldValues[idx],
-          Date.parse(times[idx])
+          this.parseTimeFromValue(times[idx])
         ]);
       }
       data.push({
@@ -111,14 +122,15 @@ export default class RocksetDatasource {
     return data;
   }
 
-  processQueryResult(values: Object[], displayTypes: string[]) {
+  processQueryResult(values: Object[], displayTypes: string[], timeSeriesCols: string[]) {
     let data = [];
     for (let valueIdx = 0; valueIdx < values.length; valueIdx+=1) {
       const value = values[valueIdx];
+      const timeSeriesCol = timeSeriesCols[valueIdx];
       if (displayTypes[valueIdx] === 'table') {
         data.push(this.createTableData(value));
       } else {
-        data.push(...this.createTimeSeriesData(value));
+        data.push(...this.createTimeSeriesData(value, timeSeriesCol));
       }
     }
     return { data: data };
@@ -157,6 +169,10 @@ export default class RocksetDatasource {
     return targets.map(target => target['type']);
   }
 
+  parseTimeSeriesCols(targets: Object[]): string[] {
+    return targets.map(target => target['timeseriesCol']);
+  }
+
   query(options) {
     let queries = this.parseQueries(options.targets);
     if (queries.length === 0) {
@@ -164,8 +180,9 @@ export default class RocksetDatasource {
     }
     let reqs = this.constructQueryRequests(queries);
     let displayTypes = this.parseDisplayTypes(options.targets);
+    let timeSeriesCols = this.parseTimeSeriesCols(options.targets);
     return Promise.all(reqs).then((res) => {
-      return this.processQueryResult(res, displayTypes);
+      return this.processQueryResult(res, displayTypes, timeSeriesCols);
     });
   }
 

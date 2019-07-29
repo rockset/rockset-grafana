@@ -19,7 +19,7 @@
       {"name": "Apache License", "url": "https://github.com/rockset/rockset-grafana/blob/master/LICENSE"}
     ],
     "version": "0.0.1",
-    "updated": "2019-07-26"
+    "updated": "2019-07-29"
   },
 
   "dependencies": {
