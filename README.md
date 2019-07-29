@@ -9,7 +9,7 @@ You will need to create an account and add a Rockset API key from The [Rockset c
 To query your Rockset collections and access the data in Grafana, simply write your SQL query into the provided
 text area after selecting Rockset as a datasource.
 
-`https://raw.githubusercontent.com/yourorg/rockset-grafana/master/src/img/rockset_query.png`
+`https://github.com/rockset/rockset-grafana/blob/master/src/img/rockset_query.png`
 
 ## Troubleshooting
 
