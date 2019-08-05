@@ -20,34 +20,6 @@ export default class RocksetDatasource {
     this.url = 'https://api.rs2.usw2.rockset.com';
   }
 
-  findTimeSeriesCol(value: Object) {
-    const columnFields = value['data']['column_fields'];
-    const results = value['data']['results'];
-    if (results.length === 0) {
-      throw new Error("No results returned from your query");
-    }
-    const sampleRow = results[0];
-    let timeSeriesCount = 0;
-    let timeSeriesColumnName: string;
-    for (const colField of columnFields) {
-      const colName = colField['name'];
-      const rowValue = sampleRow[colName];
-      const date = Date.parse(rowValue);
-      // Right now, we only accept timestamp strings from the rockset response
-      if (typeof(rowValue) !== 'string' || isNaN(date)) {
-        continue;
-      }
-      timeSeriesColumnName = colName;
-      timeSeriesCount += 1;
-    }
-    if (timeSeriesCount === 0) {
-      throw new Error("Timeseries not found in query response");
-    } else if (timeSeriesCount > 1) {
-      throw new Error("Multiple timeseries in query not supported");
-    }
-    return timeSeriesColumnName;
-  }
-
   parseTimeFromValue(value) {
     // date is a datetime string
     if (typeof(value) === 'string') {
@@ -59,7 +31,6 @@ export default class RocksetDatasource {
 
   createTimeSeriesData(value: Object, timeSeriesColName: string): Object[] {
     const data = [];
-    const timeSeriesCol = timeSeriesColName ? timeSeriesColName : this.findTimeSeriesCol(value);
     const targets = {};
     for (const row of value['data']['results']) {
       for (var key in row) {
@@ -70,15 +41,15 @@ export default class RocksetDatasource {
       }
     }
     for (const key in targets) {
-      // don't construct a time series graph
-      if (key === timeSeriesCol) {
+      // don't construct a graph with time series as values
+      if (key === timeSeriesColName) {
         continue;
       }
       const fieldValues = targets[key];
-      if (!(timeSeriesCol in targets)) {
+      if (!(timeSeriesColName in targets)) {
         throw new Error("Specified timeseries column not found");
       }
-      const times = targets[timeSeriesCol];
+      const times = targets[timeSeriesColName];
       const datapoints = [];
       for (let idx = 0; idx < fieldValues.length; idx += 1) {
         datapoints.push([
@@ -136,14 +107,36 @@ export default class RocksetDatasource {
     return { data: data };
   }
 
-  parseQueries(targets: Object[]): Object[] {
+  // Wrap with relevant time info
+  wrapSqlQuery(sqlQuery: string, timeSeriesCol: string, startTime: number, endTime: number, timeColType: string): string {
+    let wrappedQuery = 'WITH user_query as (' + sqlQuery;
+    if (timeColType === 'timestamp') {
+      wrappedQuery += `
+      ) SELECT * FROM user_query WHERE UNIX_SECONDS(${timeSeriesCol}) > ${startTime}
+      AND UNIX_SECONDS(${timeSeriesCol}) < ${endTime}`;
+    } else {
+      wrappedQuery += `
+      ) SELECT * FROM user_query WHERE ${timeSeriesCol} > ${startTime}
+      AND ${timeSeriesCol} < ${endTime}`;
+    }
+    return wrappedQuery;
+  }
+
+  parseQueries(options: any, timeSeriesCols: string[], timeColTypes: string[]): Object[] {
+    (window as any).options = options;
+    const targets = options.targets;
     let queries = [];
     for (let idx = 0; idx < targets.length; idx+=1) {
       const queryInfo = targets[idx];
+      const timeColType = timeColTypes[idx]
       let queryObject = {};
       queryObject['sql'] = {};
       if (queryInfo['target']) {
         let sqlQuery = queryInfo['target'];
+        if (sqlQuery[sqlQuery.length - 1] === ';'){
+          throw new Error("Semicolons at the end of queries not supported");
+        }
+      sqlQuery = this.wrapSqlQuery(sqlQuery, timeSeriesCols[idx], options.range['from'].unix(), options.range['to'].unix(), timeColType);
         queryObject['sql']['query'] = sqlQuery;
         queries.push(queryObject);
       }
@@ -173,14 +166,19 @@ export default class RocksetDatasource {
     return targets.map(target => target['timeseriesCol']);
   }
 
+  parseTimeColTypes(targets: Object[]): string[] {
+    return targets.map(target => target['timeColType']);
+  }
+
   query(options) {
-    let queries = this.parseQueries(options.targets);
+    let timeSeriesCols = this.parseTimeSeriesCols(options.targets);
+    let timeColTypes = this.parseTimeColTypes(options.targets);
+    let queries = this.parseQueries(options, timeSeriesCols, timeColTypes);
     if (queries.length === 0) {
       return this.$q.when({ data: [] });
     }
     let reqs = this.constructQueryRequests(queries);
     let displayTypes = this.parseDisplayTypes(options.targets);
-    let timeSeriesCols = this.parseTimeSeriesCols(options.targets);
     return Promise.all(reqs).then((res) => {
       return this.processQueryResult(res, displayTypes, timeSeriesCols);
     });

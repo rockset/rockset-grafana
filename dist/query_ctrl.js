@@ -28,6 +28,7 @@ System.register(['lodash', 'app/plugins/sdk', './css/query_editor.css!'], functi
                     lodash_1.default.defaultsDeep(this.target, this.defaults);
                     this.target.target = this.target.target || '';
                     this.target.type = this.target.type || 'timeserie';
+                    this.target.timeColType = this.target.timeColType || 'timestamp';
                     var _this = this;
                     this.debounce = lodash_1.default.debounce(function () {
                         _this.panelCtrl.refresh();

@@ -17,35 +17,6 @@ System.register([], function(exports_1) {
                     this.headers['Authorization'] = "ApiKey " + instanceSettings.jsonData['apiKey'];
                     this.url = 'https://api.rs2.usw2.rockset.com';
                 }
-                RocksetDatasource.prototype.findTimeSeriesCol = function (value) {
-                    var columnFields = value['data']['column_fields'];
-                    var results = value['data']['results'];
-                    if (results.length === 0) {
-                        throw new Error("No results returned from your query");
-                    }
-                    var sampleRow = results[0];
-                    var timeSeriesCount = 0;
-                    var timeSeriesColumnName;
-                    for (var _i = 0; _i < columnFields.length; _i++) {
-                        var colField = columnFields[_i];
-                        var colName = colField['name'];
-                        var rowValue = sampleRow[colName];
-                        var date = Date.parse(rowValue);
-                        // Right now, we only accept timestamp strings from the rockset response
-                        if (typeof (rowValue) !== 'string' || isNaN(date)) {
-                            continue;
-                        }
-                        timeSeriesColumnName = colName;
-                        timeSeriesCount += 1;
-                    }
-                    if (timeSeriesCount === 0) {
-                        throw new Error("Timeseries not found in query response");
-                    }
-                    else if (timeSeriesCount > 1) {
-                        throw new Error("Multiple timeseries in query not supported");
-                    }
-                    return timeSeriesColumnName;
-                };
                 RocksetDatasource.prototype.parseTimeFromValue = function (value) {
                     // date is a datetime string
                     if (typeof (value) === 'string') {
@@ -56,7 +27,6 @@ System.register([], function(exports_1) {
                 };
                 RocksetDatasource.prototype.createTimeSeriesData = function (value, timeSeriesColName) {
                     var data = [];
-                    var timeSeriesCol = timeSeriesColName ? timeSeriesColName : this.findTimeSeriesCol(value);
                     var targets = {};
                     for (var _i = 0, _a = value['data']['results']; _i < _a.length; _i++) {
                         var row = _a[_i];
@@ -68,15 +38,15 @@ System.register([], function(exports_1) {
                         }
                     }
                     for (var key_1 in targets) {
-                        // don't construct a time series graph
-                        if (key_1 === timeSeriesCol) {
+                        // don't construct a graph with time series as values
+                        if (key_1 === timeSeriesColName) {
                             continue;
                         }
                         var fieldValues = targets[key_1];
-                        if (!(timeSeriesCol in targets)) {
+                        if (!(timeSeriesColName in targets)) {
                             throw new Error("Specified timeseries column not found");
                         }
-                        var times = targets[timeSeriesCol];
+                        var times = targets[timeSeriesColName];
                         var datapoints = [];
                         for (var idx = 0; idx < fieldValues.length; idx += 1) {
                             datapoints.push([
@@ -132,14 +102,32 @@ System.register([], function(exports_1) {
                     }
                     return { data: data };
                 };
-                RocksetDatasource.prototype.parseQueries = function (targets) {
+                // Wrap with relevant time info
+                RocksetDatasource.prototype.wrapSqlQuery = function (sqlQuery, timeSeriesCol, startTime, endTime, timeColType) {
+                    var wrappedQuery = 'WITH user_query as (' + sqlQuery;
+                    if (timeColType === 'timestamp') {
+                        wrappedQuery += "\n      ) SELECT * FROM user_query WHERE UNIX_SECONDS(" + timeSeriesCol + ") > " + startTime + "\n      AND UNIX_SECONDS(" + timeSeriesCol + ") < " + endTime;
+                    }
+                    else {
+                        wrappedQuery += "\n      ) SELECT * FROM user_query WHERE " + timeSeriesCol + " > " + startTime + "\n      AND " + timeSeriesCol + " < " + endTime;
+                    }
+                    return wrappedQuery;
+                };
+                RocksetDatasource.prototype.parseQueries = function (options, timeSeriesCols, timeColTypes) {
+                    window.options = options;
+                    var targets = options.targets;
                     var queries = [];
                     for (var idx = 0; idx < targets.length; idx += 1) {
                         var queryInfo = targets[idx];
+                        var timeColType = timeColTypes[idx];
                         var queryObject = {};
                         queryObject['sql'] = {};
                         if (queryInfo['target']) {
                             var sqlQuery = queryInfo['target'];
+                            if (sqlQuery[sqlQuery.length - 1] === ';') {
+                                throw new Error("Semicolons at the end of queries not supported");
+                            }
+                            sqlQuery = this.wrapSqlQuery(sqlQuery, timeSeriesCols[idx], options.range['from'].unix(), options.range['to'].unix(), timeColType);
                             queryObject['sql']['query'] = sqlQuery;
                             queries.push(queryObject);
                         }
@@ -165,15 +153,19 @@ System.register([], function(exports_1) {
                 RocksetDatasource.prototype.parseTimeSeriesCols = function (targets) {
                     return targets.map(function (target) { return target['timeseriesCol']; });
                 };
+                RocksetDatasource.prototype.parseTimeColTypes = function (targets) {
+                    return targets.map(function (target) { return target['timeColType']; });
+                };
                 RocksetDatasource.prototype.query = function (options) {
                     var _this = this;
-                    var queries = this.parseQueries(options.targets);
+                    var timeSeriesCols = this.parseTimeSeriesCols(options.targets);
+                    var timeColTypes = this.parseTimeColTypes(options.targets);
+                    var queries = this.parseQueries(options, timeSeriesCols, timeColTypes);
                     if (queries.length === 0) {
                         return this.$q.when({ data: [] });
                     }
                     var reqs = this.constructQueryRequests(queries);
                     var displayTypes = this.parseDisplayTypes(options.targets);
-                    var timeSeriesCols = this.parseTimeSeriesCols(options.targets);
                     return Promise.all(reqs).then(function (res) {
                         return _this.processQueryResult(res, displayTypes, timeSeriesCols);
                     });

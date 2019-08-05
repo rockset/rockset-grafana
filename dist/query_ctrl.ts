@@ -18,6 +18,7 @@ export class RocksetQueryCtrl extends QueryCtrl {
     _.defaultsDeep(this.target, this.defaults);
     this.target.target = this.target.target || '';
     this.target.type = this.target.type || 'timeserie';
+    this.target.timeColType = this.target.timeColType || 'timestamp';
     const _this = this;
     this.debounce = _.debounce(function() {
       _this.panelCtrl.refresh();

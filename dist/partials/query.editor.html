@@ -20,8 +20,8 @@
         <label class="gf-form-label query-keyword">Format as</label>
         <select class="gf-form-input gf-size-auto" ng-model="ctrl.target.type" ng-options="f as f for f in ['timeserie', 'table']"></select>
       </div>
-      <div class="gf-form max-width-25">
-        <label class="gf-form-label query-keyword">Timeseries column (optional)</label>
+      <div class="gf-form max-width-30">
+        <label class="gf-form-label query-keyword">Timeseries field</label>
         <textarea
         class="gf-form-input"
         style="width:600px;"
@@ -30,6 +30,9 @@
         spellcheck="false"
         ng-change="ctrl.onChangeInternal()">
       </textarea>
+      <label class="gf-form-label query-keyword">Timeseries Type</label>
+      <select class="gf-form-input gf-size-auto" ng-model="ctrl.target.timeColType" ng-change="ctrl.onChangeInternal()" ng-options="t as t for t in ['integer', 'timestamp']"></select>
+    </textarea>
     </div>
     </div>
   </div>
