@@ -1,13 +1,17 @@
 # Using Rockset from Grafana
 
+Complete documentation located at
+https://docs.rockset.com/grafana/
+
+
 ## Requirements
 
 You will need to create an account and add a Rockset API key from `https://console.rockset.com/apikeys#`
 
 ## Setup
-To add this plugin into your Grafana, `git clone` the repository, and copy it into your `data/plugins` directory. You can also follow the instructions at `https://grafana.com/docs/plugins/developing/development/`
+use the grafana-cli to install your plugin. You can download the rockset plugin by using the command `grafana-cli --pluginUrl https://github.com/rockset/rockset-grafana/archive/<LATEST_RELEASE>.zip plugins install rockset-grafana .` where LATEST_RELEASE is the most recent release from this repository.
 
-You should then be able to select Rockset as a data source, enter your API key and begin creating dashboards.
+From your grafana homepage, go to /datasources. You can type this in your browser, or click on the gear on the left side of the screen and click “Data Sources” under the configuration menu. Select Rockset as a data source, and enter your API key where prompted.
 
 ## Queries
 
@@ -19,17 +23,3 @@ text area after selecting Rockset as a datasource.
 ## Troubleshooting
 
 If you have any problems or suggestions please contact support@rockset.com
-
-## Developing on this Plugin
-
-1. Make a subdirectory named after your plugin in the `data/plugins` subdirectory in your Grafana instance. It does not really matter what the directory name is. When the plugin is installed via the grafana cli, it will create a directory named after the plugin id field in the plugin.json file.
-
-1. Copy the files in this project into your new plugin subdirectory.
-2. `npm install` or `yarn install`
-3. `grunt`
-4. `karma start --single-run` to run the tests once. There is one failing test for the `testDatasource` in the datasource.ts file.
-5. Restart your Grafana server to start using the plugin in Grafana (Grafana only needs to be restarted once).
-
-`grunt watch` will build the TypeScript files and copy everything to the dist directory automatically when a file changes. This is useful for when working on the code. `karma start` will turn on the karma file watcher so that it reruns all the tests automatically when a file changes.
-
-Changes should be made in the `src` directory. The build task transpiles the TypeScript code into JavaScript and copies it to the `dist` directory. Grafana will load the JavaScript from the `dist` directory and ignore the `src` directory.
