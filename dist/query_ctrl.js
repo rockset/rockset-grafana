@@ -40,7 +40,6 @@ System.register(['lodash', 'app/plugins/sdk', './css/query_editor.css!'], functi
                 RocksetQueryCtrl.prototype.onChangeInternal = function () {
                     this.debounce.cancel();
                     this.debounce();
-                    // this.panelCtrl.refresh(); // Asks the panel to refresh data.
                 };
                 RocksetQueryCtrl.templateUrl = 'partials/query.editor.html';
                 return RocksetQueryCtrl;

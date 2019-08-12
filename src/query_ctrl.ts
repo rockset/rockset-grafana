@@ -32,6 +32,5 @@ export class RocksetQueryCtrl extends QueryCtrl {
   onChangeInternal() {
     this.debounce.cancel();
     this.debounce();
-    // this.panelCtrl.refresh(); // Asks the panel to refresh data.
   }
 }
