@@ -1,7 +1,7 @@
 {
   "type": "datasource",
   "name": "Rockset",
-  "id": "rockset-grafana-rockset",
+  "id": "rockset-grafana",
 
   "info": {
     "description": "Plugin for Rockset Collections",
@@ -18,8 +18,8 @@
       {"name": "Project site", "url": "https://github.com/rockset/rockset-grafana"},
       {"name": "Apache License", "url": "https://github.com/rockset/rockset-grafana/blob/master/LICENSE"}
     ],
-    "version": "0.0.1",
-    "updated": "2019-08-05"
+    "version": "1.0.0",
+    "updated": "2019-08-12"
   },
 
   "dependencies": {
