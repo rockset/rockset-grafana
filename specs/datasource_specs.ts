@@ -1,4 +1,5 @@
 import {describe, beforeEach, it, sinon, expect, angularMocks} from './lib/common';
+import moment from 'moment';
 import RocksetDatasource from '../src/datasource';
 import TemplateSrvStub from './lib/template_srv_stub';
 import Q from 'q';
@@ -112,7 +113,12 @@ describe('RocksetDatasource', function() {
     it('should return success status for single query', function() {
       const options = {
         headers: {},
-        targets: [{'target': 'SELECT * FROM foo'}],
+        range: {
+          from: moment(),
+          to: moment()
+        },
+        targets: [{'target': 'SELECT _event_time, COUNT(*) FROM foo GROUP BY _event_time', 'timeseriesCol': '?date'}],
+        timeseriesCol: '?date'
       };
       ctx.backendSrv.datasourceRequest = function(options) {
         return ctx.$q.when(response);
@@ -124,6 +130,14 @@ describe('RocksetDatasource', function() {
     });
 
     it('should return success status for many queries', function() {
+      const options = {
+        headers: {},
+        range: {
+          from: moment(),
+          to: moment()
+        },
+        targets: [{'target': 'SELECT * FROM foo', 'timeseriesCol': '?date'}, {'target': 'SELECT * FROM bar', 'timeseriesCol': '?date'}],
+      };
       return ctx.ds.query(options).then(function(data) {
         expect(data.data.length).to.equal(2);
         expect(data.data[0].datapoints.length).to.equal(2);
@@ -134,6 +148,10 @@ describe('RocksetDatasource', function() {
     it('should return success status for single table query', function() {
       const options = {
         headers: {},
+        range: {
+          from: moment(),
+          to: moment()
+        },
         targets: [{'target': 'SELECT * FROM foo', 'type': 'table'}],
       };
       return ctx.ds.query(options).then(function(data) {
@@ -148,6 +166,10 @@ describe('RocksetDatasource', function() {
     it('should return success status for multiple table query', function() {
       const options = {
         headers: {},
+        range: {
+          from: moment(),
+          to: moment()
+        },
         targets: [
           {'target': 'SELECT * FROM foo', 'type': 'table'},
           {'target': 'SELECT * FROM foo', 'type': 'table'}
