@@ -1,7 +1,7 @@
 {
   "type": "datasource",
   "name": "Rockset",
-  "id": "rockset-grafana-datasource",
+  "id": "rockset-rockset-datasource",
 
   "info": {
     "description": "Plugin for Rockset Collections as datasources",
