@@ -1,10 +1,10 @@
 {
   "type": "datasource",
   "name": "Rockset",
-  "id": "rockset-grafana",
+  "id": "rockset-grafana-datasource",
 
   "info": {
-    "description": "Plugin for Rockset Collections",
+    "description": "Plugin for Rockset Collections as datasources",
     "author": {
       "name": "Rockset",
       "url": "https://rockset.com/"
