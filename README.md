@@ -52,6 +52,24 @@ mage -v
 mage -l
 ```
 
+## Testing
+
+Run grafana in a docker container
+
+```
+docker run -d \
+    -p 3000:3000 \
+    -v "$(pwd)/..:/var/lib/grafana/plugins" \
+    --name=grafana \
+    grafana/grafana:7.0.3
+```
+
+Since Grafana only loads plugins on start-up, you need to restart the container whenever you add or remove a plugin.
+
+```
+docker restart grafana
+```
+
 ## Learn more
 
 - [Build a data source backend plugin tutorial](https://grafana.com/tutorials/build-a-data-source-backend-plugin)
