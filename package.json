@@ -18,6 +18,6 @@
     "@types/lodash": "latest"
   },
   "engines": {
-    "node": ">=12 <13"
+    "node": ">=12 <=14"
   }
 }
