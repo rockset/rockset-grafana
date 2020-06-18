@@ -185,6 +185,7 @@ ORDER BY
   log.DefaultLogger.Info("times", "array", times)
   log.DefaultLogger.Info("values", "array", values)
 
+  labels := data.Labels{"type": "foo"}
   // add the time dimension
   frame.Fields = append(frame.Fields,
     data.NewField("time", nil, times),
@@ -192,7 +193,7 @@ ORDER BY
 
   // add values
   frame.Fields = append(frame.Fields,
-    data.NewField("values", nil, values),
+    data.NewField("values", labels, values),
   )
 
   // add the frames to the response

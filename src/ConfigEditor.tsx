@@ -1,11 +1,11 @@
 import React, { ChangeEvent, PureComponent } from 'react';
 import { LegacyForms } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps } from '@grafana/data';
-import { MyDataSourceOptions, MySecureJsonData } from './types';
+import { RocksetDataSourceOptions, RocksetSecureJsonData } from './types';
 
 const { SecretFormField, FormField } = LegacyForms;
 
-interface Props extends DataSourcePluginOptionsEditorProps<MyDataSourceOptions> {}
+interface Props extends DataSourcePluginOptionsEditorProps<RocksetDataSourceOptions> {}
 
 interface State {}
 
@@ -48,7 +48,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
   render() {
     const { options } = this.props;
     const { jsonData, secureJsonFields } = options;
-    const secureJsonData = (options.secureJsonData || {}) as MySecureJsonData;
+    const secureJsonData = (options.secureJsonData || {}) as RocksetSecureJsonData;
 
     return (
       <div className="gf-form-group">
@@ -58,7 +58,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
             labelWidth={6}
             inputWidth={64}
             onChange={this.onServerChange}
-            value={jsonData.path || 'api.rs2.usw2.rockset.com'}
+            value={jsonData.server || 'api.rs2.usw2.rockset.com'}
             placeholder="api server"
           />
         </div>
