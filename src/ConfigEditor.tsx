@@ -10,11 +10,11 @@ interface Props extends DataSourcePluginOptionsEditorProps<MyDataSourceOptions> 
 interface State {}
 
 export class ConfigEditor extends PureComponent<Props, State> {
-  onPathChange = (event: ChangeEvent<HTMLInputElement>) => {
+  onServerChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { onOptionsChange, options } = this.props;
     const jsonData = {
       ...options.jsonData,
-      path: event.target.value,
+      server: event.target.value,
     };
     onOptionsChange({ ...options, jsonData });
   };
@@ -54,12 +54,12 @@ export class ConfigEditor extends PureComponent<Props, State> {
       <div className="gf-form-group">
         <div className="gf-form">
           <FormField
-            label="Path"
+            label="API server"
             labelWidth={6}
-            inputWidth={20}
-            onChange={this.onPathChange}
-            value={jsonData.path || ''}
-            placeholder="json field returned to frontend"
+            inputWidth={64}
+            onChange={this.onServerChange}
+            value={jsonData.path || 'api.rs2.usw2.rockset.com'}
+            placeholder="api server"
           />
         </div>
 
@@ -71,7 +71,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
               label="API Key"
               placeholder="secure json field (backend only)"
               labelWidth={6}
-              inputWidth={20}
+              inputWidth={64}
               onReset={this.onResetAPIKey}
               onChange={this.onAPIKeyChange}
             />

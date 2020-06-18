@@ -12,8 +12,9 @@ type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
 export class QueryEditor extends PureComponent<Props> {
   onQueryTextChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { onChange, query } = this.props;
+    const { onChange, query, onRunQuery } = this.props;
     onChange({ ...query, queryText: event.target.value });
+    onRunQuery();
   };
 
   onConstantChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -42,7 +43,7 @@ export class QueryEditor extends PureComponent<Props> {
           value={queryText || ''}
           onChange={this.onQueryTextChange}
           label="Query Text"
-          tooltip="Not used yet"
+          tooltip='Rockset SQL'
         />
       </div>
     );

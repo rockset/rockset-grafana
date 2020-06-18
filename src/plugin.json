@@ -1,14 +1,14 @@
 {
   "type": "datasource",
-  "name": "rockset-grafana",
-  "id": "rockset-rockset-grafana",
+  "name": "Rockset",
+  "id": "rockset-grafana",
   "metrics": true,
   "backend": true,
   "executable": "gpx_rockset-grafana",
   "info": {
     "description": "",
     "author": {
-      "name": "Martin Englund",
+      "name": "Rockset Inc",
       "url": "https://rockset.com"
     },
     "keywords": [
@@ -23,11 +23,11 @@
     "links": [
       {
         "name": "Website",
-        "url": "https://github.com/grafana/simple-datasource-backend"
+        "url": "https://github.com/rockset/rockset-grafana"
       },
       {
         "name": "License",
-        "url": "https://github.com/grafana/simple-datasource-backend/blob/master/LICENSE"
+        "url": "https://github.com/rockset/rockset-grafana/blob/master/LICENSE"
       }
     ],
     "screenshots": [],
