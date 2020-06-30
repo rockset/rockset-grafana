@@ -44,32 +44,32 @@ export class QueryEditor extends PureComponent<Props> {
         <div className="gf-form">
           <FormField
             labelWidth={8}
-            value={queryParamStart || ':start'}
+            value={queryParamStart || ':startTime'}
             onChange={this.onQueryParamStartChange}
             label="Start"
-            tooltip="Name of the query parameter for the start value"
+            tooltip="Name of the query parameter for the start time"
           />
           <FormField
             labelWidth={8}
-            value={queryParamStop || ':stop'}
+            value={queryParamStop || ':stopTime'}
             onChange={this.onQueryParamStopChange}
             label="Stop"
-            tooltip="Name of the query parameter for the stop value"
+            tooltip="Name of the query parameter for the stop time"
           />
           <FormField
             labelWidth={8}
             value={queryTimeField || '_event_time'}
             onChange={this.onQueryTimeFieldChange}
-            label="Time"
-            tooltip="Name time column"
+            label="Time column"
+            tooltip="Name of the column containing the time series"
           />
         </div>
         <div>
           <FormField
             labelWidth={8}
             label="Query Text"
-            tooltip="Rockset SQL"
-            inputEl={<TextArea value={queryText || ''} onChange={this.onQueryTextChange} />}
+            tooltip="Rockset SQL query to get the data. Must contain a WHERE clause which limits the query based on the startTime and stopTime."
+            inputEl={<TextArea height={'100px'} value={queryText || ''} onChange={this.onQueryTextChange} />}
           />
         </div>
       </>

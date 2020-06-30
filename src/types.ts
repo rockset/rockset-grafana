@@ -5,13 +5,26 @@ export interface RocksetQuery extends DataQuery {
   queryParamStart: string;
   queryParamStop: string;
   queryTimeField: string;
+  queryValueField: string;
 }
 
 export const defaultQuery: Partial<RocksetQuery> = {
-  // TODO(pme) should there be a default query?
-  queryParamStart: ':start',
-  queryParamStop: ':stop',
+  queryText: `SELECT
+    TIME_BUCKET(HOURS(1), _events._event_time) AS _event_time,
+    count(_events.type) AS value
+FROM
+    commons._events
+WHERE
+    _events._event_time > :startTime AND
+    _events._event_time < :stopTime
+GROUP BY
+    bucket
+ORDER BY
+    bucket`,
+  queryParamStart: ':startTime',
+  queryParamStop: ':stopTime',
   queryTimeField: '_event_time',
+  queryValueField: 'value',
 };
 
 /**
