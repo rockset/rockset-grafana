@@ -5,11 +5,9 @@ import (
   "encoding/json"
   "errors"
   "fmt"
-  "github.com/davecgh/go-spew/spew"
   "github.com/rockset/rockset-go-client"
   api "github.com/rockset/rockset-go-client/lib/go"
   "net/http"
-  "os"
   "time"
 
   "github.com/grafana/grafana-plugin-sdk-go/backend"
@@ -48,23 +46,21 @@ type RocksetDatasource struct {
 // The QueryDataResponse contains a map of RefID to the response for each query, and each response
 // contains Frames ([]*Frame).
 func (rd *RocksetDatasource) QueryData(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
-  log.DefaultLogger.Info("QueryData", "request", req)
-  spew.Fdump(os.Stderr, req)
-
-  // TODO(pme) pass api server too
-  //req.PluginContext.AppInstanceSettings.
-  //id := req.PluginContext.DataSourceInstanceSettings.ID
   apiKey, found := req.PluginContext.DataSourceInstanceSettings.DecryptedSecureJSONData["apiKey"]
   if !found {
     return nil, fmt.Errorf("could not locate apiKey")
   }
 
-  rs, err := rockset.NewClient(rockset.WithAPIKey(apiKey))
+  server, err := getServer(req.PluginContext.DataSourceInstanceSettings.JSONData)
+  if err != nil {
+    return nil, fmt.Errorf("could not locate server")
+  }
+
+  rs, err := rockset.NewClient(rockset.WithAPIKey(apiKey), rockset.WithAPIServer(server))
   if err != nil {
     return nil, fmt.Errorf("could create Rockset client: %w", err)
   }
 
-  // create response struct
   response := backend.NewQueryDataResponse()
 
   // loop over queries and execute them individually.
@@ -90,11 +86,10 @@ type queryModel struct {
 }
 
 func (rd *RocksetDatasource) query(ctx context.Context, rs *rockset.RockClient, query backend.DataQuery) backend.DataResponse {
-  // Unmarshal the json into our queryModel
-  var qm queryModel
-
   response := backend.DataResponse{}
 
+  // Unmarshal the json into our queryModel
+  var qm queryModel
   response.Error = json.Unmarshal(query.JSON, &qm)
   if response.Error != nil {
     return response
@@ -239,7 +234,12 @@ func (rd *RocksetDatasource) CheckHealth(ctx context.Context, req *backend.Check
     return healthError("failed to get api key"), nil
   }
 
-  rs, err := rockset.NewClient(rockset.WithAPIKey(apiKey))
+  server, err := getServer(req.PluginContext.DataSourceInstanceSettings.JSONData)
+  if err != nil {
+    return healthError("unable to unmarshal json"), nil
+  }
+
+  rs, err := rockset.NewClient(rockset.WithAPIKey(apiKey), rockset.WithAPIServer(server))
   if err != nil {
     return healthError("failed to create Rockset client: %s", err.Error()), nil
   }
@@ -254,6 +254,20 @@ func (rd *RocksetDatasource) CheckHealth(ctx context.Context, req *backend.Check
     Status:  backend.HealthStatusOk,
     Message: "Rockset datasource is working",
   }, nil
+}
+
+func getServer(data []byte) (string, error) {
+  var conf struct {
+    Server string `json:"server"`
+  }
+
+  if err := json.Unmarshal(data, &conf); err != nil {
+    return "", err
+  }
+  if conf.Server == "" {
+    return rockset.DefaultAPIServer, nil
+  }
+  return conf.Server, nil
 }
 
 func healthError(msg string, args ...string) *backend.CheckHealthResult {

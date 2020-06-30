@@ -1,8 +1,29 @@
-# Grafana Data Source Backend Plugin Template
+# Grafana Rockset Data Source Backend Plugin
 
-[![CircleCI](https://circleci.com/gh/grafana/simple-datasource-backend/tree/master.svg?style=svg)](https://circleci.com/gh/grafana/simple-datasource-backend/tree/master)
+[![CircleCI](https://circleci.com/gh/rockset/rockset-grafana/tree/master.svg?style=svg)](https://circleci.com/gh/grafana/simple-datasource-backend/tree/master)
 
-This template is a starting point for building Grafana Data Source Backend Plugins
+The Rockset plugin lets you write queries against your Rockset collections and visualize the
+results as Grafana graphs. 
+
+The query uses two required query parameters, named `startTime` and `endTime` by default, which must be used
+in a `WHERE` clause to scope the query to the selected time period in Grafana.
+
+A sample query to graph Rockset events by 5 minute intervals
+
+```
+SELECT
+    TIME_BUCKET(MINUTES(5), _events._event_time) AS _event_time,
+    COUNT(_events.type) AS value
+FROM
+    commons._events
+WHERE
+    _events._event_time > :startTime AND
+    _events._event_time < :stopTime
+GROUP BY
+    1
+ORDER BY
+    1
+```
 
 ## What is Grafana Data Source Backend Plugin?
 

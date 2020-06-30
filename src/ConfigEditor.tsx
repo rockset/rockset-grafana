@@ -69,7 +69,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
               isConfigured={(secureJsonFields && secureJsonFields.apiKey) as boolean}
               value={secureJsonData.apiKey || ''}
               label="API Key"
-              placeholder="secure json field (backend only)"
+              placeholder="Rockset API Key"
               labelWidth={6}
               inputWidth={64}
               onReset={this.onResetAPIKey}

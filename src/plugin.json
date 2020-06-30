@@ -1,7 +1,7 @@
 {
   "type": "datasource",
   "name": "Rockset",
-  "id": "rockset-grafana",
+  "id": "rockset",
   "metrics": true,
   "backend": true,
   "alerting": true,
