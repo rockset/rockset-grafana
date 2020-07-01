@@ -8,6 +8,7 @@ import (
   "github.com/rockset/rockset-go-client"
   api "github.com/rockset/rockset-go-client/lib/go"
   "net/http"
+  "strings"
   "time"
 
   "github.com/grafana/grafana-plugin-sdk-go/backend"
@@ -77,12 +78,13 @@ func (rd *RocksetDatasource) QueryData(ctx context.Context, req *backend.QueryDa
 }
 
 type queryModel struct {
-  IntervalMs      uint64 `json:"intervalMs"`
-  MaxDataPoints   int32  `json:"maxDataPoints"`
-  QueryText       string `json:"queryText"`
-  QueryParamStart string `json:"queryParamStart"`
-  QueryParamStop  string `json:"queryParamStop"`
-  QueryTimeField  string `json:"queryTimeField"`
+  IntervalMs       uint64 `json:"intervalMs"`
+  MaxDataPoints    int32  `json:"maxDataPoints"`
+  QueryText        string `json:"queryText"`
+  QueryParamStart  string `json:"queryParamStart"`
+  QueryParamStop   string `json:"queryParamStop"`
+  QueryTimeField   string `json:"queryTimeField"`
+  QueryLabelColumn string `json:"queryLabelColumn"`
 }
 
 func (rd *RocksetDatasource) query(ctx context.Context, rs *rockset.RockClient, query backend.DataQuery) backend.DataResponse {
@@ -95,6 +97,13 @@ func (rd *RocksetDatasource) query(ctx context.Context, rs *rockset.RockClient, 
     return response
   }
 
+  if strings.HasPrefix(qm.QueryParamStart, ":") {
+    qm.QueryParamStart = strings.TrimPrefix(qm.QueryParamStart, ":")
+  }
+  if strings.HasPrefix(qm.QueryParamStop, ":") {
+    qm.QueryParamStop = strings.TrimPrefix(qm.QueryParamStop, ":")
+  }
+
   log.DefaultLogger.Info("query model",
     "interval", qm.IntervalMs, "max data points", qm.MaxDataPoints, "query text", qm.QueryText)
   log.DefaultLogger.Info("time range", "from", query.TimeRange.From, "to", query.TimeRange.To,
@@ -102,6 +111,8 @@ func (rd *RocksetDatasource) query(ctx context.Context, rs *rockset.RockClient, 
 
   var qr api.QueryResponse
   // TODO: use a ctx to make the Query so it the query can be cancelled, but this requires updating the Go client library
+  // TODO: perhaps use Grafana variables instead of query parameters?
+  //   https://grafana.com/docs/grafana/latest/developers/plugins/add-support-for-variables/
   qr, _, response.Error = rs.Query(api.QueryRequest{Sql: &api.QueryRequestSql{
     Parameters: []api.QueryParameter{
       {
@@ -131,23 +142,32 @@ func (rd *RocksetDatasource) query(ctx context.Context, rs *rockset.RockClient, 
   }
   log.DefaultLogger.Info("query response", "elapsedTime", qr.Stats.ElapsedTimeMs, "results", len(qr.Results))
 
-  for i, c := range qr.ColumnFields {
-    //skip the time field
-    if c.Name == qm.QueryTimeField {
-      continue
-    }
-    log.DefaultLogger.Info("column", "i", i, "name", c.Name)
+  labelValues, err := generateLabelValues(qm.QueryLabelColumn, qr.Results)
+  if err != nil {
+    response.Error = err
+    return response
+  }
+  log.DefaultLogger.Info("labels", "values", labelValues)
 
-    // add the frames to the response
-    frame, err := makeFrame(qm.QueryTimeField, c.Name, qr)
-    if err != nil {
-      response.Error = fmt.Errorf("failed to create frame for %s: %w", c.Name, err)
-      return response
-    }
+  for label := range labelValues {
+    for i, c := range qr.ColumnFields {
+      // skip the time field and the label column
+      if c.Name == qm.QueryTimeField || c.Name == qm.QueryLabelColumn {
+        continue
+      }
+      log.DefaultLogger.Info("column", "i", i, "name", c.Name, "label", label)
 
-    // only add the frame if it contains any useful data
-    if frame.Fields[1].Len() > 0 {
-      response.Frames = append(response.Frames, frame)
+      // add the frames to the response
+      frame, err := makeFrame(qm.QueryTimeField, c.Name, qm.QueryLabelColumn, label, qr)
+      if err != nil {
+        response.Error = fmt.Errorf("failed to create frame for %s: %w", c.Name, err)
+        return response
+      }
+
+      // only add the frame if it contains any useful data
+      if frame.Fields[1].Len() > 0 {
+        response.Frames = append(response.Frames, frame)
+      }
     }
   }
 
@@ -158,16 +178,67 @@ func (rd *RocksetDatasource) query(ctx context.Context, rs *rockset.RockClient, 
   return response
 }
 
-func makeFrame(timeField, valueField string, qr api.QueryResponse) (*data.Frame, error) {
+// extract the set of label values from the label column
+func generateLabelValues(labelColumn string, results []interface{}) (map[string]bool, error) {
+  labels := make(map[string]bool)
+
+  // if there isn't any label column specified, add an empty string so we can use it as a special case
+  if labelColumn == "" {
+    labels[""] = true
+    return labels, nil
+  }
+
+  for _, q := range results {
+    m, ok := q.(map[string]interface{})
+    if !ok {
+      log.DefaultLogger.Error("could not cast query response to map", "q", q)
+      continue
+    }
+
+    label, found := m[labelColumn]
+    if !found {
+      log.DefaultLogger.Error("could not lookup label", "column", labelColumn)
+      continue
+    }
+    l, ok := label.(string)
+    if !ok {
+      log.DefaultLogger.Error("could not cast label column value to string", "label", label)
+      continue
+    }
+    labels[l] = true
+  }
+
+  if len(labels) == 0 {
+    return nil, fmt.Errorf("could not find label column '%s' in query result", labelColumn)
+  }
+
+  return labels, nil
+}
+
+func makeFrame(timeField, valueField, labelColumn, label string, qr api.QueryResponse) (*data.Frame, error) {
   frame := data.NewFrame(valueField)
 
   var times []time.Time
   var values []float64
 
+  var labels map[string]string
+  // empty label means there is no label column and labels should use the zero value, which is nil
+  if labelColumn != "" {
+    labels = map[string]string{labelColumn: label}
+  }
+
+  // iterate over the rows
   for _, q := range qr.Results {
     m, ok := q.(map[string]interface{})
     if !ok {
       return nil, fmt.Errorf("could not cast query response to map: %+v", q)
+    }
+
+    if labelColumn != "" {
+      if l, found := m[labelColumn]; found && l != label {
+        // skip rows which doesn't match the label
+        continue
+      }
     }
 
     // the value might not be present in every row
@@ -180,7 +251,7 @@ func makeFrame(timeField, valueField string, qr api.QueryResponse) (*data.Frame,
     f, ok := v.(float64)
     if !ok {
       // TODO: is there a way to send warnings back to the Grafana UI?
-      log.DefaultLogger.Error("could cast %s to float64: %v", valueField, v)
+      log.DefaultLogger.Error("could cast to float64", "column", valueField, "value", v)
       continue
     }
     values = append(values, f)
@@ -194,10 +265,9 @@ func makeFrame(timeField, valueField string, qr api.QueryResponse) (*data.Frame,
   }
 
   // add the time dimension
-  frame.Fields = append(frame.Fields, data.NewField("time", nil, times))
-
+  frame.Fields = append(frame.Fields, data.NewField("time", labels, times))
   // add values
-  frame.Fields = append(frame.Fields, data.NewField("values", nil, values))
+  frame.Fields = append(frame.Fields, data.NewField(valueField, labels, values))
 
   return frame, nil
 }

@@ -5,8 +5,11 @@
 The Rockset plugin lets you write queries against your Rockset collections and visualize the
 results as Grafana graphs. 
 
-The query uses two required query parameters, named `startTime` and `endTime` by default, which must be used
-in a `WHERE` clause to scope the query to the selected time period in Grafana.
+https://docs.rockset.com/grafana/
+
+The query has two required query parameters, named `:startTime` and `:endTime` by default, which must be used
+in a `WHERE` clause to scope the query to the selected time period in Grafana (or you will end up querying
+your entire collection).
 
 A sample query to graph Rockset events by 5 minute intervals
 
@@ -20,20 +23,33 @@ WHERE
     _events._event_time > :startTime AND
     _events._event_time < :stopTime
 GROUP BY
-    1
+    _event_time
 ORDER BY
-    1
+    _event_time
 ```
 
-## What is Grafana Data Source Backend Plugin?
+You can use one column of the result to label the data, e.g. in the below query the `type` is the label column
 
-Grafana supports a wide range of data sources, including Prometheus, MySQL, and even Datadog. There’s a good chance you can already visualize metrics from the systems you have set up. In some cases, though, you already have an in-house metrics solution that you’d like to add to your Grafana dashboards. Grafana Data Source Plugins enables integrating such solutions with Grafana.
+```
+SELECT
+    TIME_BUCKET(MINUTES(5), _events._event_time) AS _event_time,
+    _events.type,
+    COUNT(_events.type) AS value
+FROM
+    commons._events
+WHERE
+    _events._event_time > :startTime AND
+    _events._event_time < :stopTime
+GROUP BY
+    _event_time,
+    type
+ORDER BY
+    _event_time
+```
 
-For more information about backend plugins, refer to the documentation on [Backend plugins](https://grafana.com/docs/grafana/latest/developers/plugins/backend/).
+## Development
 
-## Getting started
-
-A data source backend plugin consists of both frontend and backend components.
+The Rockset data source backend plugin consists of both frontend and backend components.
 
 ### Frontend
 
@@ -57,10 +73,10 @@ yarn build
 
 ### Backend
 
-1. Update [Grafana plugin SDK for Go](https://grafana.com/docs/grafana/latest/developers/plugins/backend/grafana-plugin-sdk-for-go/) dependency to the latest minor version:
+1. Setup `mage`
 
-```bash
-go get -u github.com/grafana/grafana-plugin-sdk-go
+```BASH
+
 ```
 
 2. Build backend plugin binaries for Linux, Windows and Darwin:
@@ -81,7 +97,7 @@ Run grafana in a docker container
 docker run -d \
     -p 3000:3000 \
     -v "$(pwd)/..:/var/lib/grafana/plugins" \
-    -e "GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=rockset-grafana" \
+    -e "GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=rockset" \
     --name=grafana \
     grafana/grafana:7.0.3
 ```

@@ -6,24 +6,28 @@ export interface RocksetQuery extends DataQuery {
   queryParamStop: string;
   queryTimeField: string;
   queryValueField: string;
+  queryLabelColumn: string;
 }
 
 export const defaultQuery: Partial<RocksetQuery> = {
-  queryText: `SELECT
+  queryText: `-- sample query
+SELECT
   TIME_BUCKET(MINUTES(5), _events._event_time) AS _event_time,
   COUNT(_events.type) AS value
 FROM
   commons._events
+-- you MUST specify a WHERE clause which scopes the query using :startTime and :stopTime
 WHERE
   _events._event_time > :startTime AND
   _events._event_time < :stopTime
 GROUP BY
-  1
+  _event_time
 ORDER BY
-  1`,
+  _event_time`,
   queryParamStart: ':startTime',
   queryParamStop: ':stopTime',
   queryTimeField: '_event_time',
+  queryLabelColumn: '',
 };
 
 /**

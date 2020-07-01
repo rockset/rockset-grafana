@@ -7,7 +7,7 @@
   "alerting": true,
   "executable": "gpx_rockset-grafana",
   "info": {
-    "description": "",
+    "description": "Plugin for Rockset Collections as datasources",
     "author": {
       "name": "Rockset Inc",
       "url": "https://rockset.com"
@@ -32,8 +32,8 @@
       }
     ],
     "screenshots": [],
-    "version": "%VERSION%",
-    "updated": "%TODAY%"
+    "version": "2.0.0",
+    "updated": "2020-07-01"
   },
   "dependencies": {
     "grafanaVersion": "7.x.x",
