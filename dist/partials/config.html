@@ -5,8 +5,10 @@
 		<div class="gf-form">
 			<span class="gf-form-label width-9">Rockset API Key</span>
 			<input class="gf-form-input width-30" type="text" ng-model='ctrl.current.jsonData.apiKey' placeholder="Find or create at https://console.rockset.com/apikeys"></input>
+      <span class="gf-form-label width-9">Rockset API Endpoint</span>
+      <input class="gf-form-input width-30" type="text" ng-model='ctrl.current.jsonData.apiServer' placeholder="Optional, defaults to https://api.rs2.usw2.rockset.com"></input>
       <info-popover mode="right-absolute">
-          <p>Find or create an API key at https://console.rockset.com/apikeys.</p>
+        <p>Find or create an API key or identify API endpoints at https://console.rockset.com/apikeys.</p>
       </info-popover>
     </div>
   </div>

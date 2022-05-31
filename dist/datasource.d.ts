@@ -4,6 +4,7 @@ export default class RocksetDatasource {
     private templateSrv;
     private $q;
     apiKey: string;
+    apiServer: string;
     backendsrv: any;
     headers: Object;
     id: number;

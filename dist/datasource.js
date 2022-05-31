@@ -15,7 +15,7 @@ System.register([], function(exports_1) {
                     this.backendsrv = backendSrv;
                     this.headers = { 'Content-Type': 'application/json' };
                     this.headers['Authorization'] = "ApiKey " + instanceSettings.jsonData['apiKey'];
-                    this.url = 'https://api.rs2.usw2.rockset.com';
+                    this.url = instanceSettings.jsonData['apiServer'] || 'https://api.rs2.usw2.rockset.com';
                 }
                 RocksetDatasource.prototype.parseTimeFromValue = function (value) {
                     // date is a datetime string

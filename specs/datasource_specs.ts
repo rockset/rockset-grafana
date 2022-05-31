@@ -7,7 +7,7 @@ import Q from 'q';
 describe('RocksetDatasource', function() {
   let ctx: any = {
     backendSrv: {},
-    instanceSettings: {'jsonData': {'apiKey': ''}},
+    instanceSettings: {'jsonData': {'apiKey': '', 'apiServer': ''}},
     templateSrv: new TemplateSrvStub()
   };
 
