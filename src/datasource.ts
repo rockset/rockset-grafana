@@ -4,6 +4,7 @@ import _ from 'lodash';
 
 export default class RocksetDatasource {
   apiKey: string;
+  apiServer: string;
   backendsrv: any;
   headers: Object;
   id: number;
@@ -17,7 +18,7 @@ export default class RocksetDatasource {
     this.backendsrv = backendSrv;
     this.headers = {'Content-Type': 'application/json'};
     this.headers['Authorization'] = `ApiKey ${instanceSettings.jsonData['apiKey']}`;
-    this.url = 'https://api.rs2.usw2.rockset.com';
+    this.url = instanceSettings.jsonData['apiServer'] || 'https://api.rs2.usw2.rockset.com';
   }
 
   parseTimeFromValue(value) {
